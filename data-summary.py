@@ -10,14 +10,14 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('SensorData')
 
 def query_sensor_data(event, context):
- now = datetime.now()
- earlier = datetime.now() - timedelta(hours=24)
- response = table.query(
-   KeyConditionExpression=Key("SensorID").eq("Reading:RaspberryPiA") & Key('Timestamp').between(earlier.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
+  now = datetime.utcnow()
+  earlier = datetime.utcnow() - timedelta(hours=24)
+  response = table.query(
+    KeyConditionExpression=Key("SensorID").eq("Reading:RaspberryPiA") & Key('Timestamp').between(earlier.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
         
- )
- create_summary(response)
- return
+  )
+  create_summary(response)
+  return
 
 
 

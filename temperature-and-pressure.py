@@ -39,7 +39,7 @@ while True:
     pressure = bmp280.get_pressure()
     print('{:05.2f}*C {:05.2f}hPa'.format(temperature, pressure))
     print("Lux: {:06.2f}, Proximity: {:04d}".format(lux, prox))
-    now = datetime.now()
+    now = datetime.utcnow()
     matrix11x7.clear()
     matrix11x7.write_string(("{:2.0f}".format(temperature)), y=1, font=font3x5)
     matrix11x7.show()
