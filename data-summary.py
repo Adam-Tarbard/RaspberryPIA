@@ -6,11 +6,12 @@ import time
 from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Key
 
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('SensorData')
+
 def query_sensor_data(event, context):
- dynamodb = boto3.resource('dynamodb')
  now = datetime.now()
  earlier = datetime.now() - timedelta(hours=24)
- table = dynamodb.Table('SensorData')
  response = table.query(
    KeyConditionExpression=Key("SensorID").eq("Reading:RaspberryPiA") & Key('Timestamp').between(earlier.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S"))
         
@@ -20,8 +21,8 @@ def query_sensor_data(event, context):
 dataitems = query_sensor_data('','')['Items']
 print(json.dumps(dataitems,indent=2))
 
-now = datetime.now()
 
+# Initialize variables for averages
 temperaturetest = 'Temperature Value'
 temptot = 0
 tempcount = 0
@@ -34,6 +35,7 @@ luxtest = 'Lux Value'
 luxtot = 0
 luxcount = 0
 
+# For loop to sum totals and counts
 for item in dataitems:
   if temperaturetest in item:
     temptot = temptot + float(item['Temperature Value']) 
@@ -46,23 +48,27 @@ for item in dataitems:
   if luxtest in item:
     luxtot = luxtot + float(item['Lux Value'])
     luxcount = luxcount + 1
-  
+
+# Calculating Means  
 tempave = temptot / tempcount
-
 pressureave = pressuretot / pressurecount
-
 luxave = luxtot / luxcount
 
-SortKey = now.strftime("%Y-%m-%d %H")
-SecondaryKey = 'MeanRecord:RaspberryPiA'
+# Set record keys
+now = datetime.now()
+SortKey = now.strftime("%Y-%m-%d %H:00:00")
+PrimaryKey = 'MeanRecord:RaspberryPiA'
 
+# Creating dictionary
 recorddict = {
-        "SensorID": SecondaryKey,
+        "SensorID": PrimaryKey,
         "Timestamp": SortKey,
         "Temperature Average Value": str(tempave),
         "Presure Average Value": str(pressureave),
         "Lux Average Value": str(luxave)
         }
 
+response = table.put_item(
+    Item= recorddict)
 
 print('Average Values  Temperature: {}  Pressure: {}  Lux: {}'.format(tempave, pressureave, luxave)) 
