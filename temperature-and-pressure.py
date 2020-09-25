@@ -57,4 +57,4 @@ while True:
             'Proximity Value': str(prox) 
         }
     )
-    time.sleep(5)
+    time.sleep(60)
